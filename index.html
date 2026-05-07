@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian - Portal de Acesso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: var(--text-dim);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        .card.tracker:hover {
+            border-color: var(--secondary);
+        }
+
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .card span {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        footer {
+            margin-top: 3rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">GUARDIAN SYSTEM</div>
+        <p>Selecione o módulo que deseja acessar abaixo para iniciar o monitoramento em tempo real.</p>
+
+        <div class="grid">
+            <!-- Link para o Painel -->
+            <a href="guardian.html" class="card">
+                <div class="icon">🖥️</div>
+                <h2>Painel de Controle</h2>
+                <span>Acessar Dashboard (Usar no PC)</span>
+            </a>
+
+            <!-- Link para o Rastreador -->
+            <a href="filho.html" class="card tracker">
+                <div class="icon">📱</div>
+                <h2>Dispositivo Filho</h2>
+                <span>Iniciar Rastreamento (Usar no Celular)</span>
+            </a>
+        </div>
+
+        <footer>
+            Guardian Rastreamento &copy; 2026 • Sistema Ativo
+        </footer>
+    </div>
+
+</body>
+</html>
