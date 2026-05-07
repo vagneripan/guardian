@@ -1,625 +1,280 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Guardian — Rastreador</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian - Rastreador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1115;
+            --card: #1a1d23;
+            --primary: #ff4b4b;
+            --accent: #00e676;
+            --text: #ffffff;
+            --text-dim: #94a3b8;
+        }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #0a0a0f;
-    color: #e0e0e0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-  .container {
-    width: 100%;
-    max-width: 420px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-  /* HEADER */
-  .header {
-    text-align: center;
-    margin-bottom: 8px;
-  }
+        .header { text-align: center; margin-bottom: 30px; margin-top: 10px; }
+        .header h1 { font-size: 24px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
+        .header p { color: var(--text-dim); font-size: 14px; }
 
-  .logo {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border: 2px solid #00d4aa33;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-    font-size: 28px;
-    box-shadow: 0 0 30px #00d4aa22;
-  }
+        .status-card {
+            background: var(--card);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #ffffff0a;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
 
-  .header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ffffff05;
+        }
 
-  .header p {
-    font-size: 13px;
-    color: #666;
-    margin-top: 4px;
-  }
+        .label { display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 14px; }
+        .value { font-weight: 600; font-size: 14px; }
+        .online { color: var(--accent); }
+        .offline { color: var(--primary); }
 
-  /* STATUS CARD */
-  .status-card {
-    background: #111118;
-    border: 1px solid #1e1e2e;
-    border-radius: 16px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
 
-  .status-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+        .metric-box {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #ffffff0a;
+        }
 
-  .status-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #888;
-  }
+        .metric-box span { display: block; color: var(--text-dim); font-size: 10px; text-transform: uppercase; margin-top: 5px; }
+        .metric-box strong { font-size: 18px; color: var(--text); }
 
-  .status-label .icon {
-    font-size: 16px;
-  }
+        .btn {
+            width: 100%;
+            max-width: 400px;
+            padding: 18px;
+            border-radius: 15px;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
-  .status-value {
-    font-size: 13px;
-    font-weight: 600;
-    color: #e0e0e0;
-  }
+        .btn-start { background: linear-gradient(135deg, #00c853, #00e676); color: #000; box-shadow: 0 10px 20px rgba(0,230,118,0.2); }
+        .btn-stop { background: linear-gradient(135deg, #d32f2f, #ff1744); color: #fff; box-shadow: 0 10px 20px rgba(255,23,68,0.2); }
 
-  .badge {
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
+        .log-container {
+            width: 100%;
+            max-width: 400px;
+            background: #00000044;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ffffff05;
+        }
 
-  .badge-off { background: #1a1a2e; color: #555; border: 1px solid #2a2a3e; }
-  .badge-ok { background: #00d4aa15; color: #00d4aa; border: 1px solid #00d4aa33; }
-  .badge-error { background: #ff4d4d15; color: #ff4d4d; border: 1px solid #ff4d4d33; }
-  .badge-waiting { background: #f5a62315; color: #f5a623; border: 1px solid #f5a62333; }
-
-  /* DIVIDER */
-  .divider {
-    height: 1px;
-    background: #1e1e2e;
-  }
-
-  /* METRICS */
-  .metrics {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .metric-box {
-    background: #111118;
-    border: 1px solid #1e1e2e;
-    border-radius: 14px;
-    padding: 16px;
-    text-align: center;
-  }
-
-  .metric-icon { font-size: 22px; margin-bottom: 6px; }
-  .metric-value {
-    font-size: 20px;
-    font-weight: 700;
-    color: #ffffff;
-  }
-  .metric-label {
-    font-size: 11px;
-    color: #555;
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* MAIN BUTTON */
-  .btn-start {
-    width: 100%;
-    padding: 18px;
-    border-radius: 16px;
-    border: none;
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-start.inactive {
-    background: linear-gradient(135deg, #00d4aa, #00b894);
-    color: #0a0a0f;
-    box-shadow: 0 4px 24px #00d4aa33;
-  }
-
-  .btn-start.inactive:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px #00d4aa55;
-  }
-
-  .btn-start.active {
-    background: linear-gradient(135deg, #ff4d4d, #c0392b);
-    color: #ffffff;
-    box-shadow: 0 4px 24px #ff4d4d33;
-    animation: pulse-btn 2s infinite;
-  }
-
-  @keyframes pulse-btn {
-    0%, 100% { box-shadow: 0 4px 24px #ff4d4d33; }
-    50% { box-shadow: 0 4px 36px #ff4d4d66; }
-  }
-
-  .btn-start:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-  }
-
-  /* LOG CARD */
-  .log-card {
-    background: #111118;
-    border: 1px solid #1e1e2e;
-    border-radius: 16px;
-    padding: 16px;
-  }
-
-  .log-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-  }
-
-  .log-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 160px;
-    overflow-y: auto;
-  }
-
-  .log-list::-webkit-scrollbar { width: 4px; }
-  .log-list::-webkit-scrollbar-track { background: transparent; }
-  .log-list::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 4px; }
-
-  .log-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 12px;
-    animation: fadeIn 0.3s ease;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .log-time { color: #444; min-width: 44px; }
-  .log-msg { color: #888; flex: 1; }
-  .log-ok .log-msg { color: #00d4aa; }
-  .log-err .log-msg { color: #ff4d4d; }
-  .log-warn .log-msg { color: #f5a623; }
-
-  /* FOOTER */
-  .footer {
-    text-align: center;
-    font-size: 11px;
-    color: #333;
-    margin-top: 4px;
-  }
-
-  /* PULSE INDICATOR */
-  .pulse-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #555;
-    display: inline-block;
-    margin-right: 6px;
-  }
-
-  .pulse-dot.active {
-    background: #00d4aa;
-    animation: pulseDot 1.5s infinite;
-  }
-
-  .pulse-dot.error {
-    background: #ff4d4d;
-  }
-
-  @keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-  }
-
-  /* BATTERY BAR */
-  .battery-bar-wrap {
-    width: 100%;
-    height: 4px;
-    background: #1e1e2e;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 6px;
-  }
-
-  .battery-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 1s ease;
-    background: linear-gradient(90deg, #00d4aa, #00b894);
-  }
-
-  .battery-bar-fill.low {
-    background: linear-gradient(90deg, #ff4d4d, #c0392b);
-  }
-</style>
+        .log-entry { margin-bottom: 5px; display: flex; gap: 8px; }
+        .log-time { color: var(--text-dim); }
+        .log-msg-error { color: var(--primary); }
+        .log-msg-success { color: var(--accent); }
+    </style>
 </head>
 <body>
 
-<div class="container">
-
-  <!-- HEADER -->
-  <div class="header">
-    <div class="logo">🛡️</div>
-    <h1>Guardian</h1>
-    <p>Sistema de Rastreamento Móvel</p>
-  </div>
-
-  <!-- STATUS CARD -->
-  <div class="status-card">
-    <div class="status-row">
-      <div class="status-label">
-        <span class="pulse-dot" id="pulseDot"></span>
-        <span>Status</span>
-      </div>
-      <span class="badge badge-off" id="statusBadge">Inativo</span>
+    <div class="header">
+        <h1>GUARDIAN</h1>
+        <p>Sistema de Rastreamento Móvel</p>
     </div>
 
-    <div class="divider"></div>
-
-    <div class="status-row">
-      <div class="status-label">
-        <span class="icon">📡</span>
-        <span>GPS</span>
-      </div>
-      <span class="status-value" id="gpsStatus">Aguardando...</span>
+    <div class="status-card">
+        <div class="status-row">
+            <div class="label"><span>📡</span> Status</div>
+            <div class="value" id="status-text">AGUARDANDO</div>
+        </div>
+        <div class="status-row">
+            <div class="label"><span>📍</span> GPS</div>
+            <div class="value" id="gps-status">Desconectado</div>
+        </div>
+        <div class="status-row">
+            <div class="label"><span>☁️</span> Servidor</div>
+            <div class="value" id="server-status">---</div>
+        </div>
     </div>
 
-    <div class="status-row">
-      <div class="status-label">
-        <span class="icon">☁️</span>
-        <span>Servidor</span>
-      </div>
-      <span class="status-value" id="serverStatus">Desconectado</span>
+    <div class="grid">
+        <div class="metric-box">
+            <strong id="val-bateria">--%</strong>
+            <span>Bateria</span>
+        </div>
+        <div class="metric-box">
+            <strong id="val-precisao">--m</strong>
+            <span>Precisão</span>
+        </div>
+        <div class="metric-box">
+            <strong id="val-lat">0.000</strong>
+            <span>Latitude</span>
+        </div>
+        <div class="metric-box">
+            <strong id="val-lng">0.000</strong>
+            <span>Longitude</span>
+        </div>
     </div>
 
-    <div class="status-row">
-      <div class="status-label">
-        <span class="icon">🔄</span>
-        <span>Envios</span>
-      </div>
-      <span class="status-value" id="sendCount">0</span>
+    <button id="mainBtn" class="btn btn-start" onclick="toggleTracking()">Iniciar Rastreamento</button>
+
+    <div class="log-container" id="log">
+        <div class="log-entry">Aguardando comando...</div>
     </div>
-  </div>
 
-  <!-- METRICS -->
-  <div class="metrics">
-    <div class="metric-box">
-      <div class="metric-icon">🔋</div>
-      <div class="metric-value" id="batValue">--%</div>
-      <div class="metric-label">Bateria</div>
-      <div class="battery-bar-wrap">
-        <div class="battery-bar-fill" id="batBar" style="width:0%"></div>
-      </div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-icon">🎯</div>
-      <div class="metric-value" id="precValue">-- m</div>
-      <div class="metric-label">Precisão</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-icon">📍</div>
-      <div class="metric-value" id="latValue" style="font-size:13px">--</div>
-      <div class="metric-label">Latitude</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-icon">📍</div>
-      <div class="metric-value" id="lngValue" style="font-size:13px">--</div>
-      <div class="metric-label">Longitude</div>
-    </div>
-  </div>
+    <script>
+        const SUPABASE_URL = 'https://vmdhfpkjriuehthrvacc.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w';
+        
+        let isTracking = false;
+        let watchId = null;
+        let batteryLevel = 0;
 
-  <!-- BUTTON -->
-  <button class="btn-start inactive" id="mainBtn" onclick="toggleRastreamento()">
-    🟢 &nbsp; Iniciar Rastreamento
-  </button>
+        // Capturar nível da bateria
+        navigator.getBattery?.().then(battery => {
+            batteryLevel = Math.round(battery.level * 100);
+            document.getElementById('val-bateria').innerText = batteryLevel + '%';
+            battery.addEventListener('levelchange', () => {
+                batteryLevel = Math.round(battery.level * 100);
+                document.getElementById('val-bateria').innerText = batteryLevel + '%';
+            });
+        });
 
-  <!-- LOG -->
-  <div class="log-card">
-    <div class="log-title">📋 Log de Atividade</div>
-    <div class="log-list" id="logList">
-      <div class="log-item">
-        <span class="log-time">--:--</span>
-        <span class="log-msg">Aguardando início do rastreamento...</span>
-      </div>
-    </div>
-  </div>
+        function addLog(msg, type = 'normal') {
+            const log = document.getElementById('log');
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const colorClass = type === 'error' ? 'log-msg-error' : (type === 'success' ? 'log-msg-success' : '');
+            entry.innerHTML = `<span class="log-time">${time}</span> <span class="${colorClass}">${msg}</span>`;
+            log.prepend(entry);
+        }
 
-  <div class="footer">
-    Guardian v2.0 — Dados criptografados e seguros
-  </div>
+        async function sendToSupabase(lat, lng, acc) {
+            const endpoint = `${SUPABASE_URL}/rest/v1/localizacoes`;
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        latitude: lat,
+                        longitude: lng,
+                        bateria: batteryLevel,
+                        precisao: acc
+                    })
+                });
 
-</div>
+                if (response.ok) {
+                    document.getElementById('server-status').innerHTML = '<span class="online">Conectado ✅</span>';
+                    addLog('Sincronizado com sucesso!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    if(response.status === 404) {
+                        document.getElementById('server-status').innerHTML = '<span class="offline">Erro 404</span>';
+                        addLog('Erro: Tabela "localizacoes" não existe!', 'error');
+                    } else {
+                        addLog('Erro no servidor: ' + response.status, 'error');
+                    }
+                }
+            } catch (err) {
+                document.getElementById('server-status').innerHTML = '<span class="offline">Erro de Rede</span>';
+                addLog('Falha de conexão com Supabase', 'error');
+            }
+        }
 
-<script>
-  // ══════════════════════════════════════
-  // CONFIGURAÇÃO DO SUPABASE
-  // ══════════════════════════════════════
-  const SUPABASE_URL = 'https://vmdhfpkjriuehthrvacc.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w';
+        function toggleTracking() {
+            const btn = document.getElementById('mainBtn');
+            const status = document.getElementById('status-text');
 
-  // ══════════════════════════════════════
-  // VARIÁVEIS GLOBAIS
-  // ══════════════════════════════════════
-  let ativo = false;
-  let watchId = null;
-  let intervalId = null;
-  let sendCount = 0;
-  let ultimaPos = null;
-  let bateria = null;
+            if (!isTracking) {
+                if (!navigator.geolocation) {
+                    addLog('GPS não suportado', 'error');
+                    return;
+                }
 
-  // ══════════════════════════════════════
-  // INICIALIZAR BATERIA
-  // ══════════════════════════════════════
-  async function initBateria() {
-    try {
-      const bat = await navigator.getBattery();
-      bateria = bat;
-      atualizarBateria(bat);
-      bat.addEventListener('levelchange', () => atualizarBateria(bat));
-      bat.addEventListener('chargingchange', () => atualizarBateria(bat));
-    } catch(e) {
-      addLog('warn', 'Sensor de bateria não disponível');
-    }
-  }
+                isTracking = true;
+                btn.innerText = 'Parar Rastreamento';
+                btn.className = 'btn btn-stop';
+                status.innerText = 'ATIVO';
+                status.style.color = 'var(--accent)';
+                addLog('Iniciando sensores...');
 
-  function atualizarBateria(bat) {
-    const pct = Math.round(bat.level * 100);
-    document.getElementById('batValue').textContent = pct + '%';
-    const bar = document.getElementById('batBar');
-    bar.style.width = pct + '%';
-    bar.className = 'battery-bar-fill' + (pct <= 20 ? ' low' : '');
-  }
-
-  // ══════════════════════════════════════
-  // TOGGLE RASTREAMENTO
-  // ══════════════════════════════════════
-  function toggleRastreamento() {
-    if (!ativo) {
-      iniciarRastreamento();
-    } else {
-      pararRastreamento();
-    }
-  }
-
-  function iniciarRastreamento() {
-    if (!navigator.geolocation) {
-      addLog('err', 'Geolocalização não suportada neste dispositivo');
-      return;
-    }
-
-    ativo = true;
-    atualizarUI();
-    addLog('warn', 'Solicitando permissão de localização...');
-
-    // Obter posição imediatamente
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        ultimaPos = pos;
-        atualizarMetricas(pos);
-        enviarLocalizacao(pos);
-        addLog('ok', 'GPS conectado com sucesso!');
-        document.getElementById('gpsStatus').textContent = 'Conectado ✓';
-      },
-      (err) => {
-        addLog('err', 'Erro GPS: ' + traduzirErroGPS(err.code));
-        document.getElementById('gpsStatus').textContent = 'Erro ✗';
-        pararRastreamento();
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-
-    // Observar posição continuamente
-    watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        ultimaPos = pos;
-        atualizarMetricas(pos);
-      },
-      (err) => {
-        addLog('err', 'GPS perdido: ' + traduzirErroGPS(err.code));
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
-    );
-
-    // Enviar a cada 10 segundos
-    intervalId = setInterval(() => {
-      if (ultimaPos) {
-        enviarLocalizacao(ultimaPos);
-      } else {
-        addLog('warn', 'Aguardando sinal GPS...');
-      }
-    }, 10000);
-  }
-
-  function pararRastreamento() {
-    ativo = false;
-    if (watchId) navigator.geolocation.clearWatch(watchId);
-    if (intervalId) clearInterval(intervalId);
-    watchId = null;
-    intervalId = null;
-    atualizarUI();
-    addLog('warn', 'Rastreamento pausado pelo usuário');
-    document.getElementById('gpsStatus').textContent = 'Desconectado';
-    document.getElementById('serverStatus').textContent = 'Desconectado';
-  }
-
-  // ══════════════════════════════════════
-  // ENVIAR LOCALIZAÇÃO PARA SUPABASE
-  // ══════════════════════════════════════
-  async function enviarLocalizacao(pos) {
-    const dados = {
-      latitude: pos.coords.latitude,
-      longitude: pos.coords.longitude,
-      precisao: Math.round(pos.coords.accuracy),
-      bateria: bateria ? Math.round(bateria.level * 100) : null,
-      timestamp: new Date().toISOString()
-    };
-
-    try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/localizacoes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(dados)
-      });
-
-      if (response.ok || response.status === 201) {
-        sendCount++;
-        document.getElementById('sendCount').textContent = sendCount;
-        document.getElementById('serverStatus').textContent = 'Sincronizado ✓';
-        addLog('ok', `Localização enviada — ${dados.latitude.toFixed(5)}, ${dados.longitude.toFixed(5)}`);
-
-        // Atualizar badge
-        const badge = document.getElementById('statusBadge');
-        badge.className = 'badge badge-ok';
-        badge.textContent = 'Ativo';
-      } else {
-        const errText = await response.text();
-        addLog('err', `Erro servidor: ${response.status}`);
-        document.getElementById('serverStatus').textContent = 'Erro ' + response.status;
-        console.error('Supabase error:', errText);
-      }
-    } catch (err) {
-      addLog('err', 'Sem conexão com servidor');
-      document.getElementById('serverStatus').textContent = 'Sem conexão';
-      console.error(err);
-    }
-  }
-
-  // ══════════════════════════════════════
-  // ATUALIZAR MÉTRICAS NA TELA
-  // ══════════════════════════════════════
-  function atualizarMetricas(pos) {
-    document.getElementById('latValue').textContent = pos.coords.latitude.toFixed(5);
-    document.getElementById('lngValue').textContent = pos.coords.longitude.toFixed(5);
-    document.getElementById('precValue').textContent = Math.round(pos.coords.accuracy) + 'm';
-  }
-
-  // ══════════════════════════════════════
-  // ATUALIZAR INTERFACE
-  // ══════════════════════════════════════
-  function atualizarUI() {
-    const btn = document.getElementById('mainBtn');
-    const dot = document.getElementById('pulseDot');
-    const badge = document.getElementById('statusBadge');
-
-    if (ativo) {
-      btn.className = 'btn-start active';
-      btn.innerHTML = '🔴 &nbsp; Parar Rastreamento';
-      dot.className = 'pulse-dot active';
-      badge.className = 'badge badge-waiting';
-      badge.textContent = 'Iniciando';
-    } else {
-      btn.className = 'btn-start inactive';
-      btn.innerHTML = '🟢 &nbsp; Iniciar Rastreamento';
-      dot.className = 'pulse-dot';
-      badge.className = 'badge badge-off';
-      badge.textContent = 'Inativo';
-    }
-  }
-
-  // ══════════════════════════════════════
-  // ADICIONAR LOG
-  // ══════════════════════════════════════
-  function addLog(tipo, mensagem) {
-    const lista = document.getElementById('logList');
-    const agora = new Date();
-    const hora = agora.getHours().toString().padStart(2,'0') + ':' + agora.getMinutes().toString().padStart(2,'0');
-
-    const item = document.createElement('div');
-    item.className = `log-item log-${tipo}`;
-    item.innerHTML = `<span class="log-time">${hora}</span><span class="log-msg">${mensagem}</span>`;
-
-    lista.insertBefore(item, lista.firstChild);
-
-    // Manter apenas os últimos 20 logs
-    while (lista.children.length > 20) {
-      lista.removeChild(lista.lastChild);
-    }
-  }
-
-  // ══════════════════════════════════════
-  // TRADUZIR ERRO GPS
-  // ══════════════════════════════════════
-  function traduzirErroGPS(code) {
-    switch(code) {
-      case 1: return 'Permissão negada — ative a localização';
-      case 2: return 'Sinal GPS indisponível';
-      case 3: return 'Tempo esgotado — tente novamente';
-      default: return 'Erro desconhecido';
-    }
-  }
-
-  // ══════════════════════════════════════
-  // INICIALIZAR
-  // ══════════════════════════════════════
-  initBateria();
-  addLog('warn', 'Sistema pronto — aguardando início');
-</script>
-
+                watchId = navigator.geolocation.watchPosition(
+                    (pos) => {
+                        const { latitude, longitude, accuracy } = pos.coords;
+                        document.getElementById('val-lat').innerText = latitude.toFixed(5);
+                        document.getElementById('val-lng').innerText = longitude.toFixed(5);
+                        document.getElementById('val-precisao').innerText = Math.round(accuracy) + 'm';
+                        document.getElementById('gps-status').innerHTML = '<span class="online">Sinal OK</span>';
+                        
+                        sendToSupabase(latitude, longitude, accuracy);
+                    },
+                    (err) => {
+                        addLog('Erro GPS: ' + err.message, 'error');
+                        document.getElementById('gps-status').innerHTML = '<span class="offline">Erro Sinal</span>';
+                    },
+                    { enableHighAccuracy: true, maximumAge: 10000 }
+                );
+            } else {
+                isTracking = false;
+                navigator.geolocation.clearWatch(watchId);
+                btn.innerText = 'Iniciar Rastreamento';
+                btn.className = 'btn btn-start';
+                status.innerText = 'AGUARDANDO';
+                status.style.color = 'var(--text-dim)';
+                document.getElementById('server-status').innerText = '---';
+                addLog('Rastreamento pausado.');
+            }
+        }
+    </script>
 </body>
 </html>
