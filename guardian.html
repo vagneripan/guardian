@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian Dashboard | Controle Realtime</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020617;
+            --card: #0f172a;
+            --primary: #10b981;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
+
+        /* Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-template-rows: 70px 1fr;
+            height: 100vh;
+        }
+
+        /* Header */
+        header {
+            grid-column: 1 / -1;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 10;
+        }
+
+        .logo { font-weight: 700; font-size: 1.25rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .status-badge { background: rgba(16, 185, 129, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--primary); }
+
+        /* Sidebar - Monitoramento */
+        aside {
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover { border-color: var(--primary); }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.25rem; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+
+        /* Mapa / Área Central */
+        main { position: relative; background: #0f172a; overflow: hidden; }
+        #map-placeholder {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: var(--text-muted);
+        }
+
+        .pulse {
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Activity Log */
+        .log-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 12px; }
+        .log-item { font-size: 0.85rem; padding-left: 12px; border-left: 2px solid var(--border); }
+        .log-time { color: var(--text-muted); font-size: 0.7rem; }
+
+        .btn-action {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: auto;
+            transition: 0.3s;
+        }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            GUARDIAN AI
+        </div>
+        <div class="status-badge" id="conn-status">Conectado ao Supabase</div>
+    </header>
+
+    <aside>
+        <div class="stat-card">
+            <div class="stat-label">Status do Dispositivo</div>
+            <div class="stat-value"><div class="pulse"></div> Online</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Bateria do Filho</div>
+            <div class="stat-value" id="bat-level">--%</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Última Localização</div>
+            <div class="stat-value" id="last-addr" style="font-size: 0.9rem;">Buscando coordenadas...</div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+            <div class="stat-label">Atividades Recentes</div>
+            <div class="log-list" id="activity-log">
+                <div class="log-item">
+                    <div class="log-time">Agora</div>
+                    <div>Sistema de monitoramento iniciado</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-action" onclick="alert('Enviando alerta para o celular...')">Emitir Alerta Sonoro</button>
+    </aside>
+
+    <main>
+        <div id="map-placeholder">
+            <div class="pulse" style="width: 40px; height: 40px; margin-bottom: 20px;"></div>
+            <p>Rastreamento em Tempo Real Ativo</p>
+            <small id="coords-display" style="margin-top: 10px; opacity: 0.5;">Aguardando GPS do dispositivo...</small>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Configurações do Supabase
+    const SUPABASE_URL = 'https://vmdhfpkjriuehthrvacc.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w'; // Use sua anon key aqui
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Função para buscar dados iniciais
+    async function fetchLastLocation() {
+        const { data, error } = await supabase
+            .from('locations')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (data && data.length > 0) {
+            updateDashboard(data[0]);
+        }
+    }
+
+    // Função para atualizar a interface
+    function updateDashboard(data) {
+        document.getElementById('bat-level').innerText = data.battery_level + '%';
+        document.getElementById('coords-display').innerText = `Lat: ${data.latitude} | Long: ${data.longitude}`;
+        document.getElementById('last-addr').innerText = 'Localização Atualizada';
+        
+        const log = document.getElementById('activity-log');
+        const newItem = document.createElement('div');
+        newItem.className = 'log-item';
+        newItem.innerHTML = `<div class="log-time">${new Date().toLocaleTimeString()}</div><div>Movimentação detectada</div>`;
+        log.prepend(newItem);
+    }
+
+    // Escutar mudanças em tempo real
+    const channel = supabase
+        .channel('schema-db-changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'locations' }, payload => {
+            console.log('Nova localização recebida!', payload.new);
+            updateDashboard(payload.new);
+        })
+        .subscribe();
+
+    // Inicializar
+    fetchLastLocation();
+</script>
+
+</body>
+</html>

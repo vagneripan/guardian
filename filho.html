@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian Tracker - Dispositivo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .icon-pulse {
+            width: 60px;
+            height: 60px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--primary);
+            position: relative;
+        }
+
+        .active .icon-pulse::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #334155; cursor: not-allowed; }
+
+        #status-box {
+            margin-top: 1.5rem;
+            background: #000;
+            padding: 1rem;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            text-align: left;
+            min-height: 60px;
+            border-left: 3px solid #334155;
+        }
+
+        .log-entry { margin-bottom: 4px; color: #10b981; }
+        .log-error { color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app-card">
+        <div class="icon-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h1>Guardian Tracker</h1>
+        <p>O monitoramento está pronto para ser iniciado neste dispositivo.</p>
+
+        <button class="btn" id="start-btn">Iniciar Rastreamento</button>
+
+        <div id="status-box">
+            <div class="log-entry">Status: Aguardando comando...</div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO DO SUPABASE (Substitua pelos seus dados se não estiverem aqui)
+        const SUPABASE_URL = 'SUA_URL_AQUI';
+        const SUPABASE_KEY = 'SUA_KEY_AQUI';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const btn = document.getElementById('start-btn');
+        const statusBox = document.getElementById('status-box');
+        const appCard = document.getElementById('app-card');
+
+        function log(msg, isError = false) {
+            const div = document.createElement('div');
+            div.className = isError ? 'log-error' : 'log-entry';
+            div.innerText = `> ${msg}`;
+            statusBox.prepend(div);
+        }
+
+        btn.addEventListener('click', async () => {
+            log('Iniciando sistema...');
+            btn.disabled = true;
+            btn.innerText = 'Rastreando...';
+            appCard.classList.add('active');
+
+            // 1. Tentar pegar nível de bateria
+            let batteryLevel = 100;
+            try {
+                const battery = await navigator.getBattery();
+                batteryLevel = Math.floor(battery.level * 100);
+            } catch (e) {
+                log('Erro ao ler bateria, usando 100%');
+            }
+
+            // 2. Iniciar monitoramento de posição
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition(
+                    async (position) => {
+                        const { latitude, longitude, accuracy } = position.coords;
+                        log(`Localização obtida (${accuracy.toFixed(0)}m)`);
+
+                        // 3. Enviar para o Supabase
+                        const { error } = await supabase
+                            .from('locations')
+                            .insert([
+                                { 
+                                    latitude, 
+                                    longitude, 
+                                    battery_level: batteryLevel,
+                                    device_id: 'Celular_Filho'
+                                }
+                            ]);
+
+                        if (error) {
+                            log('Erro ao enviar dados: ' + error.message, true);
+                        } else {
+                            log('Dados sincronizados com sucesso!');
+                        }
+                    },
+                    (error) => {
+                        log('Erro de GPS: ' + error.message, true);
+                        btn.disabled = false;
+                        btn.innerText = 'Tentar Novamente';
+                        appCard.classList.remove('active');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 30000,
+                        timeout: 27000
+                    }
+                );
+            } else {
+                log('GPS não suportado neste navegador.', true);
+            }
+        });
+    </script>
+</body>
+</html>
