@@ -1,596 +1,404 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guardian — Painel de Controle</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian Control - Painel Administrativo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0b10;
+            --sidebar-bg: #111218;
+            --accent-green: #00f294;
+            --text-main: #e0e0e0;
+            --text-dim: #94a3b8;
+            --danger: #ff4d4d;
+            --card-bg: #1a1b23;
+        }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #07070f;
-    color: #fff;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-  header {
-    background: #0d0d18;
-    border-bottom: 1px solid #1a1a2e;
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    z-index: 1000;
-  }
+        /* HEADER */
+        header {
+            height: 60px;
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid #ffffff10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-  .header-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, #00ff88, #00cc6a);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-green);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 242, 148, 0.3);
+        }
 
-  .header-title {
-    font-size: 16px;
-    font-weight: 700;
-  }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            background: #00f29415;
+            color: var(--accent-green);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
 
-  .header-sub {
-    font-size: 11px;
-    color: #555;
-    margin-top: 1px;
-  }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+        /* LAYOUT PRINCIPAL */
+        main {
+            display: flex;
+            flex: 1;
+        }
 
-  .live-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(0,255,136,0.1);
-    border: 1px solid rgba(0,255,136,0.25);
-    color: #00ff88;
-    padding: 5px 12px;
-    border-radius: 100px;
-    font-size: 12px;
-    font-weight: 600;
-  }
+        /* SIDEBAR */
+        #sidebar {
+            width: 320px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid #ffffff10;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
 
-  .live-dot {
-    width: 7px;
-    height: 7px;
-    background: #00ff88;
-    border-radius: 50%;
-    animation: pulse 1.2s ease-in-out infinite;
-  }
+        .section-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-  @keyframes pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.3; transform: scale(0.6); }
-  }
+        .data-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #ffffff05;
+        }
 
-  .main-layout {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
 
-  /* SIDEBAR */
-  .sidebar {
-    width: 280px;
-    background: #0d0d18;
-    border-right: 1px solid #1a1a2e;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    flex-shrink: 0;
-  }
+        .data-label { color: var(--text-dim); }
+        .data-value { font-weight: 600; color: var(--accent-green); font-family: monospace; }
 
-  .sidebar::-webkit-scrollbar { width: 4px; }
-  .sidebar::-webkit-scrollbar-track { background: transparent; }
-  .sidebar::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 4px; }
+        /* BATERIA */
+        .battery-container {
+            width: 100%;
+            height: 6px;
+            background: #ffffff10;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
 
-  .sidebar-section {
-    padding: 16px;
-    border-bottom: 1px solid #1a1a2e;
-  }
+        #battery-fill {
+            height: 100%;
+            background: var(--accent-green);
+            width: 0%;
+            transition: width 1s ease;
+        }
 
-  .sidebar-section-title {
-    font-size: 10px;
-    font-weight: 700;
-    color: #444;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    margin-bottom: 12px;
-  }
+        /* LOGS */
+        #log-container {
+            flex: 1;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            overflow-y: auto;
+            max-height: 250px;
+            padding-right: 5px;
+        }
 
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
+        .log-entry {
+            padding: 8px;
+            border-left: 2px solid var(--accent-green);
+            background: #ffffff05;
+            margin-bottom: 5px;
+            border-radius: 0 4px 4px 0;
+        }
 
-  .info-label {
-    font-size: 12px;
-    color: #666;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+        /* MAPA */
+        #map {
+            flex: 1;
+            background: #0f1115;
+        }
 
-  .info-value {
-    font-size: 12px;
-    font-weight: 600;
-    color: #ccc;
-    text-align: right;
-    max-width: 55%;
-    word-break: break-all;
-  }
+        /* CONTROLES FLUTUANTES */
+        .map-controls {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-  .info-value.green { color: #00ff88; }
-  .info-value.yellow { color: #ffaa00; }
-  .info-value.red { color: #ff3c3c; }
+        .btn-control {
+            background: var(--card-bg);
+            border: 1px solid #ffffff20;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-  .bat-bar-wrap {
-    background: #1a1a2e;
-    border-radius: 4px;
-    height: 6px;
-    overflow: hidden;
-    margin-top: 6px;
-  }
+        .btn-control:hover {
+            background: var(--accent-green);
+            color: var(--bg-dark);
+        }
 
-  .bat-bar {
-    height: 100%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, #00ff88, #00cc6a);
-    transition: width 0.5s ease;
-  }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
-  .stat-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .stat-box {
-    background: #111120;
-    border: 1px solid #1a1a2e;
-    border-radius: 10px;
-    padding: 12px;
-    text-align: center;
-  }
-
-  .stat-num {
-    font-size: 22px;
-    font-weight: 900;
-    color: #00ff88;
-    line-height: 1;
-  }
-
-  .stat-lbl {
-    font-size: 10px;
-    color: #555;
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .log-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-
-  .log-item {
-    background: #111120;
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 11px;
-    color: #888;
-    border-left: 3px solid #1a1a2e;
-    animation: fadeIn 0.3s ease;
-  }
-
-  .log-item.success { border-left-color: #00ff88; color: #00ff88; }
-  .log-item.error { border-left-color: #ff3c3c; color: #ff3c3c; }
-  .log-item.info { border-left-color: #4d9fff; color: #4d9fff; }
-
-  .log-item-time {
-    color: #444;
-    font-size: 10px;
-    margin-bottom: 2px;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-6px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  /* MAP */
-  .map-area {
-    flex: 1;
-    position: relative;
-  }
-
-  #map {
-    width: 100%;
-    height: 100%;
-    background: #0a0a14;
-  }
-
-  .map-overlay {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .map-btn {
-    background: #0d0d18;
-    border: 1px solid #1a1a2e;
-    color: #ccc;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .map-btn:hover {
-    background: #1a1a2e;
-    color: #fff;
-    border-color: #00ff88;
-  }
-
-  .no-data-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(7,7,15,0.85);
-    z-index: 998;
-    gap: 12px;
-  }
-
-  .no-data-icon { font-size: 48px; }
-  .no-data-title { font-size: 18px; font-weight: 700; color: #fff; }
-  .no-data-sub { font-size: 13px; color: #555; text-align: center; max-width: 260px; line-height: 1.5; }
-
-  .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .si-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-
-  .si-green { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
-  .si-yellow { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; animation: pulse 1.5s infinite; }
-  .si-red { background: #ff3c3c; box-shadow: 0 0 8px #ff3c3c; }
-
-  @media (max-width: 768px) {
-    .sidebar { display: none; }
-  }
-</style>
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
 </head>
 <body>
 
-<header>
-  <div class="header-left">
-    <div class="header-icon">🛡️</div>
-    <div>
-      <div class="header-title">Guardian Control</div>
-      <div class="header-sub" id="headerSub">Conectando ao banco de dados...</div>
-    </div>
-  </div>
-  <div class="header-right">
-    <div class="status-indicator">
-      <div class="si-dot si-yellow" id="siDot"></div>
-      <span id="siText">Aguardando</span>
-    </div>
-    <div class="live-badge">
-      <div class="live-dot"></div>
-      LIVE
-    </div>
-  </div>
-</header>
-
-<div class="main-layout">
-  <div class="sidebar">
-
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">📍 Posição Atual</div>
-      <div class="info-row">
-        <span class="info-label">Latitude</span>
-        <span class="info-value green" id="sLat">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Longitude</span>
-        <span class="info-value green" id="sLng">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Precisão</span>
-        <span class="info-value" id="sPrecisao">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Último update</span>
-        <span class="info-value" id="sUltimo">—</span>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">🔋 Dispositivo</div>
-      <div class="info-row">
-        <span class="info-label">Bateria</span>
-        <span class="info-value" id="sBateria">—</span>
-      </div>
-      <div class="bat-bar-wrap">
-        <div class="bat-bar" id="batBar" style="width: 0%"></div>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">📊 Estatísticas</div>
-      <div class="stat-grid">
-        <div class="stat-box">
-          <div class="stat-num" id="stTotal">0</div>
-          <div class="stat-lbl">Registros</div>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🛡️</div>
+            <div>
+                <h1 style="font-size: 1.1rem; font-weight: 700;">Guardian Control</h1>
+                <p style="font-size: 0.6rem; color: var(--text-dim);">MONITORAMENTO EM TEMPO REAL</p>
+            </div>
         </div>
-        <div class="stat-box">
-          <div class="stat-num" id="stOnline" style="color:#ffaa00">—</div>
-          <div class="stat-lbl">Status</div>
+        <div class="status-badge">
+            <div class="pulse-dot"></div>
+            SISTEMA ONLINE
         </div>
-      </div>
-    </div>
+    </header>
 
-    <div class="sidebar-section" style="flex:1">
-      <div class="sidebar-section-title">📋 Últimos Registros</div>
-      <div class="log-list" id="logList"></div>
-    </div>
+    <main>
+        <div id="sidebar">
+            <div>
+                <div class="section-title">📍 Posição Atual</div>
+                <div class="data-card">
+                    <div class="data-row">
+                        <span class="data-label">Latitude</span>
+                        <span id="lat-val" class="data-value">- - -</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Longitude</span>
+                        <span id="lng-val" class="data-value">- - -</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Precisão</span>
+                        <span id="acc-val" class="data-value">- - -</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Atualização</span>
+                        <span id="time-val" class="data-value">Aguardando...</span>
+                    </div>
+                </div>
+            </div>
 
-  </div>
+            <div>
+                <div class="section-title">🔋 Status do Dispositivo</div>
+                <div class="data-card">
+                    <div class="data-row">
+                        <span class="data-label">Bateria</span>
+                        <span id="bat-val" class="data-value">0%</span>
+                    </div>
+                    <div class="battery-container">
+                        <div id="battery-fill"></div>
+                    </div>
+                </div>
+            </div>
 
-  <div class="map-area">
-    <div id="map"></div>
-    <div class="no-data-overlay" id="noDataOverlay">
-      <div class="no-data-icon">📡</div>
-      <div class="no-data-title">Aguardando Sinal</div>
-      <div class="no-data-sub">Abra o <strong>filho.html</strong> no celular e inicie o rastreamento para ver a localização aqui.</div>
-    </div>
-    <div class="map-overlay">
-      <button class="map-btn" onclick="centralizar()">🎯 Centralizar</button>
-      <button class="map-btn" onclick="limparHistorico()">🗑️ Limpar Trilha</button>
-    </div>
-  </div>
-</div>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <div class="section-title">📊 Registros</div>
+                    <div class="data-card" style="text-align: center;">
+                        <span id="count-val" style="font-size: 1.5rem; font-weight: 800; color: var(--accent-green);">0</span>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <div class="section-title">📡 Status</div>
+                    <div class="data-card" style="text-align: center;">
+                        <span style="font-size: 1.2rem; font-weight: 800; color: var(--accent-green);">ON</span>
+                    </div>
+                </div>
+            </div>
 
-<script>
-  const SUPABASE_URL = 'https://vmdhfpkjriuehthrvacc.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w';
-  const TABELA = 'localizacoes';
+            <div>
+                <div class="section-title">📋 Últimos Eventos</div>
+                <div id="log-container">
+                    <!-- Logs entrarão aqui -->
+                </div>
+            </div>
+        </div>
 
-  let map, marker, polyline, trail = [];
-  let lastId = null;
-  let totalRegistros = 0;
-  let primeiroCarregamento = true;
+        <div id="map"></div>
 
-  // INIT MAP
-  map = L.map('map', { zoomControl: true }).setView([-15.7801, -47.9292], 4);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap © CartoDB',
-    maxZoom: 19
-  }).addTo(map);
+        <div class="map-controls">
+            <button class="btn-control" onclick="centerMap()">🎯 Centralizar</button>
+            <button class="btn-control" onclick="clearTrail()">🗑️ Limpar Trilha</button>
+        </div>
+    </main>
 
-  const iconeCustom = L.divIcon({
-    html: `<div style="
-      width:20px;height:20px;
-      background:linear-gradient(135deg,#00ff88,#00cc6a);
-      border-radius:50%;
-      border:3px solid #fff;
-      box-shadow:0 0 15px rgba(0,255,136,0.8);
-    "></div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    className: ''
-  });
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  polyline = L.polyline([], { color: '#00ff88', weight: 2, opacity: 0.5 }).addTo(map);
+    <script>
+        // CONFIGURAÇÕES SUPABASE
+        const SUPABASE_URL = "https://vmdhfpkjriuehthrvacc.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  function addLog(msg, tipo = 'info') {
-    const list = document.getElementById('logList');
-    const item = document.createElement('div');
-    item.className = `log-item ${tipo}`;
-    const hora = new Date().toLocaleTimeString('pt-BR');
-    item.innerHTML = `<div class="log-item-time">${hora}</div>${msg}`;
-    list.insertBefore(item, list.firstChild);
-    if (list.children.length > 20) list.removeChild(list.lastChild);
-  }
+        // VARIÁVEIS DO MAPA
+        let map, marker, trailLine;
+        let coordsHistory = [];
+        let firstLoad = true;
 
-  function setStatus(status) {
-    const dot = document.getElementById('siDot');
-    const txt = document.getElementById('siText');
-    const sub = document.getElementById('headerSub');
-    if (status === 'online') {
-      dot.className = 'si-dot si-green';
-      txt.textContent = 'Online';
-      sub.textContent = 'Dispositivo rastreado em tempo real';
-    } else if (status === 'waiting') {
-      dot.className = 'si-dot si-yellow';
-      txt.textContent = 'Aguardando';
-      sub.textContent = 'Conectado — aguardando dados do celular';
-    } else {
-      dot.className = 'si-dot si-red';
-      txt.textContent = 'Erro';
-      sub.textContent = 'Falha ao conectar com o banco de dados';
-    }
-  }
+        function initMap() {
+            map = L.map('map', { zoomControl: false }).setView([0, 0], 2);
+            
+            // Tema Dark Mode
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CartoDB'
+            }).addTo(map);
 
-  function centralizar() {
-    if (marker) map.setView(marker.getLatLng(), 16);
-  }
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-  function limparHistorico() {
-    trail = [];
-    polyline.setLatLngs([]);
-  }
+            // Estilo do Marcador (Pulsante)
+            const pulseIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: #00f294; width: 15px; height: 15px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px #00f294;"></div>`,
+                iconSize: [15, 15],
+                iconAnchor: [7, 7]
+            });
 
-  async function buscarDados() {
-    try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/${TABELA}?select=*&order=id.desc&limit=1`,
-        {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
+            marker = L.marker([0, 0], { icon: pulseIcon }).addTo(map);
+            trailLine = L.polyline([], { color: '#00f294', weight: 3, opacity: 0.6, dashArray: '5, 10' }).addTo(map);
         }
-      );
 
-      if (!res.ok) {
-        setStatus('error');
-        addLog(`Erro HTTP ${res.status} ao buscar dados`, 'error');
-        return;
-      }
+        async function updateDashboard() {
+            try {
+                const { data, error } = await _supabase
+                    .from('localizacoes')
+                    .select('*')
+                    .order('id', { ascending: false });
 
-      const dados = await res.json();
+                if (error) throw error;
 
-      // Buscar total
-      const resCount = await fetch(
-        `${SUPABASE_URL}/rest/v1/${TABELA}?select=id`,
-        {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Prefer': 'count=exact',
-            'Range': '0-0'
-          }
+                if (data && data.length > 0) {
+                    const latest = data[0];
+                    
+                    // Atualiza Interface
+                    document.getElementById('lat-val').innerText = latest.latitude.toFixed(6);
+                    document.getElementById('lng-val').innerText = latest.longitude.toFixed(6);
+                    document.getElementById('acc-val').innerText = `±${latest.precisao.toFixed(1)}m`;
+                    document.getElementById('bat-val').innerText = `${latest.bateria}%`;
+                    document.getElementById('battery-fill').style.width = `${latest.bateria}%`;
+                    document.getElementById('count-val').innerText = data.length;
+                    document.getElementById('time-val').innerText = new Date(latest.timestamp).toLocaleTimeString();
+
+                    // Atualiza Mapa
+                    const pos = [latest.latitude, latest.longitude];
+                    marker.setLatLng(pos);
+
+                    // Gerencia Trilha (Histórico)
+                    coordsHistory = data.map(item => [item.latitude, item.longitude]);
+                    trailLine.setLatLngs(coordsHistory);
+
+                    if (firstLoad) {
+                        map.setView(pos, 15);
+                        firstLoad = false;
+                    }
+
+                    // Atualiza Logs (Apenas os últimos 10)
+                    const logContainer = document.getElementById('log-container');
+                    logContainer.innerHTML = '';
+                    data.slice(0, 10).forEach(entry => {
+                        const div = document.createElement('div');
+                        div.className = 'log-entry';
+                        div.innerHTML = `
+                            <strong>${new Date(entry.timestamp).toLocaleTimeString()}</strong><br>
+                            📍 ${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)} | 🔋 ${entry.bateria}%
+                        `;
+                        logContainer.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.error("Erro ao buscar dados:", err);
+            }
         }
-      );
-      const contentRange = resCount.headers.get('Content-Range');
-      if (contentRange) {
-        const total = contentRange.split('/')[1];
-        totalRegistros = parseInt(total) || 0;
-        document.getElementById('stTotal').textContent = totalRegistros;
-      }
 
-      if (primeiroCarregamento) {
-        setStatus('waiting');
-        addLog('✅ Conexão com Supabase estabelecida', 'success');
-        primeiroCarregamento = false;
-      }
+        function centerMap() {
+            if (marker) map.panTo(marker.getLatLng());
+        }
 
-      if (!dados || dados.length === 0) {
-        document.getElementById('stOnline').textContent = 'OFF';
-        document.getElementById('stOnline').style.color = '#ff3c3c';
-        return;
-      }
+        async function clearTrail() {
+            if (confirm("Deseja limpar o histórico de trilha no mapa? (Isso não apagará os dados do banco)")) {
+                trailLine.setLatLngs([]);
+            }
+        }
 
-      const d = dados[0];
+        // Inicialização
+        initMap();
+        updateDashboard();
+        setInterval(updateDashboard, 5000); // Atualiza a cada 5 segundos
 
-      if (d.id === lastId) return;
-      lastId = d.id;
-
-      const lat = parseFloat(d.latitude);
-      const lng = parseFloat(d.longitude);
-      const bat = d.bateria;
-      const prec = d.precisao;
-      const ts = new Date(d.timestamp);
-      const agora = new Date();
-      const diffMin = Math.round((agora - ts) / 60000);
-
-      // Verifica se está online (último registro < 2 minutos)
-      if (diffMin < 2) {
-        setStatus('online');
-        document.getElementById('stOnline').textContent = 'ON';
-        document.getElementById('stOnline').style.color = '#00ff88';
-      } else {
-        setStatus('waiting');
-        document.getElementById('stOnline').textContent = `${diffMin}min`;
-        document.getElementById('stOnline').style.color = '#ffaa00';
-      }
-
-      // Atualizar sidebar
-      document.getElementById('sLat').textContent = lat.toFixed(6);
-      document.getElementById('sLng').textContent = lng.toFixed(6);
-      document.getElementById('sPrecisao').textContent = prec ? `±${prec}m` : '—';
-      document.getElementById('sUltimo').textContent = diffMin === 0 ? 'Agora' : `${diffMin}min atrás`;
-
-      if (bat !== null && bat !== undefined) {
-        document.getElementById('sBateria').textContent = `${bat}%`;
-        document.getElementById('batBar').style.width = `${bat}%`;
-        document.getElementById('batBar').style.background = bat > 30
-          ? 'linear-gradient(90deg,#00ff88,#00cc6a)'
-          : bat > 15
-          ? 'linear-gradient(90deg,#ffaa00,#ff8800)'
-          : 'linear-gradient(90deg,#ff3c3c,#cc0000)';
-      }
-
-      // Mapa
-      document.getElementById('noDataOverlay').style.display = 'none';
-      const latlng = [lat, lng];
-      trail.push(latlng);
-      if (trail.length > 100) trail.shift();
-      polyline.setLatLngs(trail);
-
-      if (!marker) {
-        marker = L.marker(latlng, { icon: iconeCustom }).addTo(map);
-        map.setView(latlng, 16);
-      } else {
-        marker.setLatLng(latlng);
-      }
-
-      addLog(`📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} | 🔋${bat !== null ? bat + '%' : 'N/D'} | ±${prec}m`, 'success');
-
-    } catch (e) {
-      setStatus('error');
-      addLog(`Erro de rede: ${e.message}`, 'error');
-    }
-  }
-
-  // Iniciar
-  buscarDados();
-  setInterval(buscarDados, 8000);
-</script>
+    </script>
 </body>
 </html>
