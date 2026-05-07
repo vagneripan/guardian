@@ -1,213 +1,596 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guardian Dashboard | Controle Realtime</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #020617;
-            --card: #0f172a;
-            --primary: #10b981;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #1e293b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guardian — Painel de Controle</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        
-        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Layout */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            grid-template-rows: 70px 1fr;
-            height: 100vh;
-        }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #07070f;
+    color: #fff;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-        /* Header */
-        header {
-            grid-column: 1 / -1;
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            z-index: 10;
-        }
+  header {
+    background: #0d0d18;
+    border-bottom: 1px solid #1a1a2e;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 1000;
+  }
 
-        .logo { font-weight: 700; font-size: 1.25rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .status-badge { background: rgba(16, 185, 129, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--primary); }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-        /* Sidebar - Monitoramento */
-        aside {
-            background: var(--card);
-            border-right: 1px solid var(--border);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            overflow-y: auto;
-        }
+  .header-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #00ff88, #00cc6a);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
 
-        .stat-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            padding: 1rem;
-            border-radius: 12px;
-            transition: 0.3s;
-        }
+  .header-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
 
-        .stat-card:hover { border-color: var(--primary); }
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-        .stat-value { font-size: 1.25rem; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+  .header-sub {
+    font-size: 11px;
+    color: #555;
+    margin-top: 1px;
+  }
 
-        /* Mapa / Área Central */
-        main { position: relative; background: #0f172a; overflow: hidden; }
-        #map-placeholder {
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: var(--text-muted);
-        }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-        .pulse {
-            width: 20px;
-            height: 20px;
-            background: var(--primary);
-            border-radius: 50%;
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            animation: pulse 2s infinite;
-        }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.25);
+    color: #00ff88;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+  }
 
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
 
-        /* Activity Log */
-        .log-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 12px; }
-        .log-item { font-size: 0.85rem; padding-left: 12px; border-left: 2px solid var(--border); }
-        .log-time { color: var(--text-muted); font-size: 0.7rem; }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.6); }
+  }
 
-        .btn-action {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: auto;
-            transition: 0.3s;
-        }
-        .btn-action:hover { opacity: 0.9; transform: translateY(-2px); }
+  .main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
 
-    </style>
+  /* SIDEBAR */
+  .sidebar {
+    width: 280px;
+    background: #0d0d18;
+    border-right: 1px solid #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 4px; }
+
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid #1a1a2e;
+  }
+
+  .sidebar-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 12px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .info-label {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .info-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ccc;
+    text-align: right;
+    max-width: 55%;
+    word-break: break-all;
+  }
+
+  .info-value.green { color: #00ff88; }
+  .info-value.yellow { color: #ffaa00; }
+  .info-value.red { color: #ff3c3c; }
+
+  .bat-bar-wrap {
+    background: #1a1a2e;
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+
+  .bat-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #00ff88, #00cc6a);
+    transition: width 0.5s ease;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-box {
+    background: #111120;
+    border: 1px solid #1a1a2e;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 22px;
+    font-weight: 900;
+    color: #00ff88;
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: 10px;
+    color: #555;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .log-item {
+    background: #111120;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #888;
+    border-left: 3px solid #1a1a2e;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .log-item.success { border-left-color: #00ff88; color: #00ff88; }
+  .log-item.error { border-left-color: #ff3c3c; color: #ff3c3c; }
+  .log-item.info { border-left-color: #4d9fff; color: #4d9fff; }
+
+  .log-item-time {
+    color: #444;
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* MAP */
+  .map-area {
+    flex: 1;
+    position: relative;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    background: #0a0a14;
+  }
+
+  .map-overlay {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .map-btn {
+    background: #0d0d18;
+    border: 1px solid #1a1a2e;
+    color: #ccc;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .map-btn:hover {
+    background: #1a1a2e;
+    color: #fff;
+    border-color: #00ff88;
+  }
+
+  .no-data-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(7,7,15,0.85);
+    z-index: 998;
+    gap: 12px;
+  }
+
+  .no-data-icon { font-size: 48px; }
+  .no-data-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .no-data-sub { font-size: 13px; color: #555; text-align: center; max-width: 260px; line-height: 1.5; }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .si-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .si-green { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+  .si-yellow { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; animation: pulse 1.5s infinite; }
+  .si-red { background: #ff3c3c; box-shadow: 0 0 8px #ff3c3c; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+  }
+</style>
 </head>
 <body>
 
-<div class="dashboard">
-    <header>
-        <div class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            GUARDIAN AI
-        </div>
-        <div class="status-badge" id="conn-status">Conectado ao Supabase</div>
-    </header>
+<header>
+  <div class="header-left">
+    <div class="header-icon">🛡️</div>
+    <div>
+      <div class="header-title">Guardian Control</div>
+      <div class="header-sub" id="headerSub">Conectando ao banco de dados...</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-indicator">
+      <div class="si-dot si-yellow" id="siDot"></div>
+      <span id="siText">Aguardando</span>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
+  </div>
+</header>
 
-    <aside>
-        <div class="stat-card">
-            <div class="stat-label">Status do Dispositivo</div>
-            <div class="stat-value"><div class="pulse"></div> Online</div>
-        </div>
+<div class="main-layout">
+  <div class="sidebar">
 
-        <div class="stat-card">
-            <div class="stat-label">Bateria do Filho</div>
-            <div class="stat-value" id="bat-level">--%</div>
-        </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">📍 Posição Atual</div>
+      <div class="info-row">
+        <span class="info-label">Latitude</span>
+        <span class="info-value green" id="sLat">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Longitude</span>
+        <span class="info-value green" id="sLng">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Precisão</span>
+        <span class="info-value" id="sPrecisao">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Último update</span>
+        <span class="info-value" id="sUltimo">—</span>
+      </div>
+    </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Última Localização</div>
-            <div class="stat-value" id="last-addr" style="font-size: 0.9rem;">Buscando coordenadas...</div>
-        </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">🔋 Dispositivo</div>
+      <div class="info-row">
+        <span class="info-label">Bateria</span>
+        <span class="info-value" id="sBateria">—</span>
+      </div>
+      <div class="bat-bar-wrap">
+        <div class="bat-bar" id="batBar" style="width: 0%"></div>
+      </div>
+    </div>
 
-        <div style="margin-top: 1rem;">
-            <div class="stat-label">Atividades Recentes</div>
-            <div class="log-list" id="activity-log">
-                <div class="log-item">
-                    <div class="log-time">Agora</div>
-                    <div>Sistema de monitoramento iniciado</div>
-                </div>
-            </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">📊 Estatísticas</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="stTotal">0</div>
+          <div class="stat-lbl">Registros</div>
         </div>
-
-        <button class="btn-action" onclick="alert('Enviando alerta para o celular...')">Emitir Alerta Sonoro</button>
-    </aside>
-
-    <main>
-        <div id="map-placeholder">
-            <div class="pulse" style="width: 40px; height: 40px; margin-bottom: 20px;"></div>
-            <p>Rastreamento em Tempo Real Ativo</p>
-            <small id="coords-display" style="margin-top: 10px; opacity: 0.5;">Aguardando GPS do dispositivo...</small>
+        <div class="stat-box">
+          <div class="stat-num" id="stOnline" style="color:#ffaa00">—</div>
+          <div class="stat-lbl">Status</div>
         </div>
-    </main>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="flex:1">
+      <div class="sidebar-section-title">📋 Últimos Registros</div>
+      <div class="log-list" id="logList"></div>
+    </div>
+
+  </div>
+
+  <div class="map-area">
+    <div id="map"></div>
+    <div class="no-data-overlay" id="noDataOverlay">
+      <div class="no-data-icon">📡</div>
+      <div class="no-data-title">Aguardando Sinal</div>
+      <div class="no-data-sub">Abra o <strong>filho.html</strong> no celular e inicie o rastreamento para ver a localização aqui.</div>
+    </div>
+    <div class="map-overlay">
+      <button class="map-btn" onclick="centralizar()">🎯 Centralizar</button>
+      <button class="map-btn" onclick="limparHistorico()">🗑️ Limpar Trilha</button>
+    </div>
+  </div>
 </div>
 
 <script>
-    // Configurações do Supabase
-    const SUPABASE_URL = 'https://vmdhfpkjriuehthrvacc.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w'; // Use sua anon key aqui
+  const SUPABASE_URL = 'https://vmdhfpkjriuehthrvacc.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w';
+  const TABELA = 'localizacoes';
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let map, marker, polyline, trail = [];
+  let lastId = null;
+  let totalRegistros = 0;
+  let primeiroCarregamento = true;
 
-    // Função para buscar dados iniciais
-    async function fetchLastLocation() {
-        const { data, error } = await supabase
-            .from('locations')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(1);
+  // INIT MAP
+  map = L.map('map', { zoomControl: true }).setView([-15.7801, -47.9292], 4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CartoDB',
+    maxZoom: 19
+  }).addTo(map);
 
-        if (data && data.length > 0) {
-            updateDashboard(data[0]);
+  const iconeCustom = L.divIcon({
+    html: `<div style="
+      width:20px;height:20px;
+      background:linear-gradient(135deg,#00ff88,#00cc6a);
+      border-radius:50%;
+      border:3px solid #fff;
+      box-shadow:0 0 15px rgba(0,255,136,0.8);
+    "></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    className: ''
+  });
+
+  polyline = L.polyline([], { color: '#00ff88', weight: 2, opacity: 0.5 }).addTo(map);
+
+  function addLog(msg, tipo = 'info') {
+    const list = document.getElementById('logList');
+    const item = document.createElement('div');
+    item.className = `log-item ${tipo}`;
+    const hora = new Date().toLocaleTimeString('pt-BR');
+    item.innerHTML = `<div class="log-item-time">${hora}</div>${msg}`;
+    list.insertBefore(item, list.firstChild);
+    if (list.children.length > 20) list.removeChild(list.lastChild);
+  }
+
+  function setStatus(status) {
+    const dot = document.getElementById('siDot');
+    const txt = document.getElementById('siText');
+    const sub = document.getElementById('headerSub');
+    if (status === 'online') {
+      dot.className = 'si-dot si-green';
+      txt.textContent = 'Online';
+      sub.textContent = 'Dispositivo rastreado em tempo real';
+    } else if (status === 'waiting') {
+      dot.className = 'si-dot si-yellow';
+      txt.textContent = 'Aguardando';
+      sub.textContent = 'Conectado — aguardando dados do celular';
+    } else {
+      dot.className = 'si-dot si-red';
+      txt.textContent = 'Erro';
+      sub.textContent = 'Falha ao conectar com o banco de dados';
+    }
+  }
+
+  function centralizar() {
+    if (marker) map.setView(marker.getLatLng(), 16);
+  }
+
+  function limparHistorico() {
+    trail = [];
+    polyline.setLatLngs([]);
+  }
+
+  async function buscarDados() {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/${TABELA}?select=*&order=id.desc&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
         }
+      );
+
+      if (!res.ok) {
+        setStatus('error');
+        addLog(`Erro HTTP ${res.status} ao buscar dados`, 'error');
+        return;
+      }
+
+      const dados = await res.json();
+
+      // Buscar total
+      const resCount = await fetch(
+        `${SUPABASE_URL}/rest/v1/${TABELA}?select=id`,
+        {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Prefer': 'count=exact',
+            'Range': '0-0'
+          }
+        }
+      );
+      const contentRange = resCount.headers.get('Content-Range');
+      if (contentRange) {
+        const total = contentRange.split('/')[1];
+        totalRegistros = parseInt(total) || 0;
+        document.getElementById('stTotal').textContent = totalRegistros;
+      }
+
+      if (primeiroCarregamento) {
+        setStatus('waiting');
+        addLog('✅ Conexão com Supabase estabelecida', 'success');
+        primeiroCarregamento = false;
+      }
+
+      if (!dados || dados.length === 0) {
+        document.getElementById('stOnline').textContent = 'OFF';
+        document.getElementById('stOnline').style.color = '#ff3c3c';
+        return;
+      }
+
+      const d = dados[0];
+
+      if (d.id === lastId) return;
+      lastId = d.id;
+
+      const lat = parseFloat(d.latitude);
+      const lng = parseFloat(d.longitude);
+      const bat = d.bateria;
+      const prec = d.precisao;
+      const ts = new Date(d.timestamp);
+      const agora = new Date();
+      const diffMin = Math.round((agora - ts) / 60000);
+
+      // Verifica se está online (último registro < 2 minutos)
+      if (diffMin < 2) {
+        setStatus('online');
+        document.getElementById('stOnline').textContent = 'ON';
+        document.getElementById('stOnline').style.color = '#00ff88';
+      } else {
+        setStatus('waiting');
+        document.getElementById('stOnline').textContent = `${diffMin}min`;
+        document.getElementById('stOnline').style.color = '#ffaa00';
+      }
+
+      // Atualizar sidebar
+      document.getElementById('sLat').textContent = lat.toFixed(6);
+      document.getElementById('sLng').textContent = lng.toFixed(6);
+      document.getElementById('sPrecisao').textContent = prec ? `±${prec}m` : '—';
+      document.getElementById('sUltimo').textContent = diffMin === 0 ? 'Agora' : `${diffMin}min atrás`;
+
+      if (bat !== null && bat !== undefined) {
+        document.getElementById('sBateria').textContent = `${bat}%`;
+        document.getElementById('batBar').style.width = `${bat}%`;
+        document.getElementById('batBar').style.background = bat > 30
+          ? 'linear-gradient(90deg,#00ff88,#00cc6a)'
+          : bat > 15
+          ? 'linear-gradient(90deg,#ffaa00,#ff8800)'
+          : 'linear-gradient(90deg,#ff3c3c,#cc0000)';
+      }
+
+      // Mapa
+      document.getElementById('noDataOverlay').style.display = 'none';
+      const latlng = [lat, lng];
+      trail.push(latlng);
+      if (trail.length > 100) trail.shift();
+      polyline.setLatLngs(trail);
+
+      if (!marker) {
+        marker = L.marker(latlng, { icon: iconeCustom }).addTo(map);
+        map.setView(latlng, 16);
+      } else {
+        marker.setLatLng(latlng);
+      }
+
+      addLog(`📍 ${lat.toFixed(5)}, ${lng.toFixed(5)} | 🔋${bat !== null ? bat + '%' : 'N/D'} | ±${prec}m`, 'success');
+
+    } catch (e) {
+      setStatus('error');
+      addLog(`Erro de rede: ${e.message}`, 'error');
     }
+  }
 
-    // Função para atualizar a interface
-    function updateDashboard(data) {
-        document.getElementById('bat-level').innerText = data.battery_level + '%';
-        document.getElementById('coords-display').innerText = `Lat: ${data.latitude} | Long: ${data.longitude}`;
-        document.getElementById('last-addr').innerText = 'Localização Atualizada';
-        
-        const log = document.getElementById('activity-log');
-        const newItem = document.createElement('div');
-        newItem.className = 'log-item';
-        newItem.innerHTML = `<div class="log-time">${new Date().toLocaleTimeString()}</div><div>Movimentação detectada</div>`;
-        log.prepend(newItem);
-    }
-
-    // Escutar mudanças em tempo real
-    const channel = supabase
-        .channel('schema-db-changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'locations' }, payload => {
-            console.log('Nova localização recebida!', payload.new);
-            updateDashboard(payload.new);
-        })
-        .subscribe();
-
-    // Inicializar
-    fetchLastLocation();
+  // Iniciar
+  buscarDados();
+  setInterval(buscarDados, 8000);
 </script>
-
 </body>
 </html>
