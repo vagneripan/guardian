@@ -4,117 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardian - Rastreador</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0f1115;
             --card: #1a1d23;
-            --primary: #ff4b4b;
-            --accent: #00e676;
+            --primary: #ff3344;
             --text: #ffffff;
-            --text-dim: #94a3b8;
+            --text-dim: #8e949e;
+            --success: #00ff88;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
         body {
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .header { text-align: center; margin-bottom: 30px; margin-top: 10px; }
-        .header h1 { font-size: 24px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
-        .header p { color: var(--text-dim); font-size: 14px; }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            letter-spacing: 2px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
 
         .status-card {
             background: var(--card);
             width: 100%;
-            max-width: 400px;
+            max-width: 350px;
             border-radius: 20px;
             padding: 20px;
-            border: 1px solid #ffffff0a;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             margin-bottom: 20px;
         }
 
-        .status-row {
+        .info-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #ffffff05;
+            border-bottom: 1px solid #2a2e37;
         }
 
-        .label { display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 14px; }
-        .value { font-weight: 600; font-size: 14px; }
-        .online { color: var(--accent); }
-        .offline { color: var(--primary); }
+        .info-row:last-child { border: none; margin: 0; padding: 0; }
 
-        .grid {
+        .label { color: var(--text-dim); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .value { font-weight: 600; color: var(--success); }
+        .value.error { color: var(--primary); }
+
+        .grid-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             width: 100%;
-            max-width: 400px;
+            max-width: 350px;
+            margin-bottom: 20px;
         }
 
-        .metric-box {
+        .stat-box {
             background: var(--card);
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             text-align: center;
-            border: 1px solid #ffffff0a;
         }
 
-        .metric-box span { display: block; color: var(--text-dim); font-size: 10px; text-transform: uppercase; margin-top: 5px; }
-        .metric-box strong { font-size: 18px; color: var(--text); }
+        .stat-box small { color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .stat-box span { font-weight: 800; font-size: 1.1rem; }
 
         .btn {
             width: 100%;
-            max-width: 400px;
+            max-width: 350px;
             padding: 18px;
             border-radius: 15px;
             border: none;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s;
+            font-weight: 800;
+            font-size: 1rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(255, 51, 68, 0.3);
         }
 
-        .btn-start { background: linear-gradient(135deg, #00c853, #00e676); color: #000; box-shadow: 0 10px 20px rgba(0,230,118,0.2); }
-        .btn-stop { background: linear-gradient(135deg, #d32f2f, #ff1744); color: #fff; box-shadow: 0 10px 20px rgba(255,23,68,0.2); }
+        .btn-start { background: var(--primary); color: white; }
+        .btn-stop { background: #333; color: white; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
 
-        .log-container {
+        .logs {
             width: 100%;
-            max-width: 400px;
-            background: #00000044;
-            margin-top: 20px;
-            padding: 15px;
+            max-width: 350px;
+            background: rgba(0,0,0,0.3);
             border-radius: 15px;
+            padding: 15px;
+            margin-top: 25px;
             font-family: monospace;
-            font-size: 12px;
-            height: 150px;
+            font-size: 0.75rem;
+            height: 120px;
             overflow-y: auto;
-            border: 1px solid #ffffff05;
+            border: 1px solid #2a2e37;
         }
 
-        .log-entry { margin-bottom: 5px; display: flex; gap: 8px; }
-        .log-time { color: var(--text-dim); }
-        .log-msg-error { color: var(--primary); }
-        .log-msg-success { color: var(--accent); }
+        .log-entry { margin-bottom: 5px; border-left: 2px solid var(--primary); padding-left: 8px; }
+        .log-success { border-left-color: var(--success); color: var(--success); }
     </style>
 </head>
 <body>
@@ -125,156 +134,144 @@
     </div>
 
     <div class="status-card">
-        <div class="status-row">
-            <div class="label"><span>📡</span> Status</div>
-            <div class="value" id="status-text">AGUARDANDO</div>
+        <div class="info-row">
+            <span class="label">📡 Status</span>
+            <span id="status-text" class="value">AGUARDANDO</span>
         </div>
-        <div class="status-row">
-            <div class="label"><span>📍</span> GPS</div>
-            <div class="value" id="gps-status">Desconectado</div>
+        <div class="info-row">
+            <span class="label">📍 GPS</span>
+            <span id="gps-status" class="value">---</span>
         </div>
-        <div class="status-row">
-            <div class="label"><span>☁️</span> Servidor</div>
-            <div class="value" id="server-status">---</div>
+        <div class="info-row">
+            <span class="label">☁️ Servidor</span>
+            <span id="server-status" class="value">---</span>
         </div>
     </div>
 
-    <div class="grid">
-        <div class="metric-box">
-            <strong id="val-bateria">--%</strong>
-            <span>Bateria</span>
+    <div class="grid-stats">
+        <div class="stat-box">
+            <small>Bateria</small>
+            <span id="stat-bat">--%</span>
         </div>
-        <div class="metric-box">
-            <strong id="val-precisao">--m</strong>
-            <span>Precisão</span>
+        <div class="stat-box">
+            <small>Precisão</small>
+            <span id="stat-acc">--m</span>
         </div>
-        <div class="metric-box">
-            <strong id="val-lat">0.000</strong>
-            <span>Latitude</span>
+        <div class="stat-box">
+            <small>Latitude</small>
+            <span id="stat-lat" style="font-size: 0.9rem;">0.0000</span>
         </div>
-        <div class="metric-box">
-            <strong id="val-lng">0.000</strong>
-            <span>Longitude</span>
+        <div class="stat-box">
+            <small>Longitude</small>
+            <span id="stat-lng" style="font-size: 0.9rem;">0.0000</span>
         </div>
     </div>
 
     <button id="mainBtn" class="btn btn-start" onclick="toggleTracking()">Iniciar Rastreamento</button>
 
-    <div class="log-container" id="log">
-        <div class="log-entry">Aguardando comando...</div>
+    <div class="logs" id="logPanel">
+        <div class="log-entry">Pronto para iniciar...</div>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://vmdhfpkjriuehthrvacc.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w';
-        
-        let isTracking = false;
-        let watchId = null;
-        let batteryLevel = 0;
+<script>
+    const SB_URL = "https://vmdhfpkjriuehthrvacc.supabase.co/rest/v1/localizacoes";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZGhmcGtqcml1ZWh0aHJ2YWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzE1MTEsImV4cCI6MjA5MzU0NzUxMX0.aJrkzShre1xCtH0bnrChyEpLh7S55bDuN7zw2QIrs2w";
 
-        // Capturar nível da bateria
-        navigator.getBattery?.().then(battery => {
-            batteryLevel = Math.round(battery.level * 100);
-            document.getElementById('val-bateria').innerText = batteryLevel + '%';
-            battery.addEventListener('levelchange', () => {
-                batteryLevel = Math.round(battery.level * 100);
-                document.getElementById('val-bateria').innerText = batteryLevel + '%';
+    let tracking = false;
+    let watchId = null;
+
+    function addLog(msg, type = '') {
+        const panel = document.getElementById('logPanel');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type === 'success' ? 'log-success' : ''}`;
+        const now = new Date();
+        entry.innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} ${msg}`;
+        panel.prepend(entry);
+    }
+
+    async function sendToSupabase(data) {
+        try {
+            const response = await fetch(SB_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SB_KEY,
+                    'Authorization': `Bearer ${SB_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(data)
             });
-        });
 
-        function addLog(msg, type = 'normal') {
-            const log = document.getElementById('log');
-            const now = new Date();
-            const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            const colorClass = type === 'error' ? 'log-msg-error' : (type === 'success' ? 'log-msg-success' : '');
-            entry.innerHTML = `<span class="log-time">${time}</span> <span class="${colorClass}">${msg}</span>`;
-            log.prepend(entry);
-        }
-
-        async function sendToSupabase(lat, lng, acc) {
-            const endpoint = `${SUPABASE_URL}/rest/v1/localizacoes`;
-            
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        latitude: lat,
-                        longitude: lng,
-                        bateria: batteryLevel,
-                        precisao: acc
-                    })
-                });
-
-                if (response.ok) {
-                    document.getElementById('server-status').innerHTML = '<span class="online">Conectado ✅</span>';
-                    addLog('Sincronizado com sucesso!', 'success');
-                } else {
-                    const errorData = await response.json();
-                    if(response.status === 404) {
-                        document.getElementById('server-status').innerHTML = '<span class="offline">Erro 404</span>';
-                        addLog('Erro: Tabela "localizacoes" não existe!', 'error');
-                    } else {
-                        addLog('Erro no servidor: ' + response.status, 'error');
-                    }
-                }
-            } catch (err) {
-                document.getElementById('server-status').innerHTML = '<span class="offline">Erro de Rede</span>';
-                addLog('Falha de conexão com Supabase', 'error');
-            }
-        }
-
-        function toggleTracking() {
-            const btn = document.getElementById('mainBtn');
-            const status = document.getElementById('status-text');
-
-            if (!isTracking) {
-                if (!navigator.geolocation) {
-                    addLog('GPS não suportado', 'error');
-                    return;
-                }
-
-                isTracking = true;
-                btn.innerText = 'Parar Rastreamento';
-                btn.className = 'btn btn-stop';
-                status.innerText = 'ATIVO';
-                status.style.color = 'var(--accent)';
-                addLog('Iniciando sensores...');
-
-                watchId = navigator.geolocation.watchPosition(
-                    (pos) => {
-                        const { latitude, longitude, accuracy } = pos.coords;
-                        document.getElementById('val-lat').innerText = latitude.toFixed(5);
-                        document.getElementById('val-lng').innerText = longitude.toFixed(5);
-                        document.getElementById('val-precisao').innerText = Math.round(accuracy) + 'm';
-                        document.getElementById('gps-status').innerHTML = '<span class="online">Sinal OK</span>';
-                        
-                        sendToSupabase(latitude, longitude, accuracy);
-                    },
-                    (err) => {
-                        addLog('Erro GPS: ' + err.message, 'error');
-                        document.getElementById('gps-status').innerHTML = '<span class="offline">Erro Sinal</span>';
-                    },
-                    { enableHighAccuracy: true, maximumAge: 10000 }
-                );
+            if (response.ok) {
+                document.getElementById('server-status').innerText = 'CONECTADO';
+                document.getElementById('server-status').className = 'value';
+                addLog('Localização enviada!', 'success');
             } else {
-                isTracking = false;
-                navigator.geolocation.clearWatch(watchId);
-                btn.innerText = 'Iniciar Rastreamento';
-                btn.className = 'btn btn-start';
-                status.innerText = 'AGUARDANDO';
-                status.style.color = 'var(--text-dim)';
-                document.getElementById('server-status').innerText = '---';
-                addLog('Rastreamento pausado.');
+                const errData = await response.json();
+                document.getElementById('server-status').innerText = 'ERRO ' + response.status;
+                document.getElementById('server-status').className = 'value error';
+                addLog('Erro no servidor: ' + response.status);
+                console.error(errData);
             }
+        } catch (err) {
+            addLog('Erro de conexão!');
+            document.getElementById('server-status').innerText = 'OFFLINE';
         }
-    </script>
+    }
+
+    function toggleTracking() {
+        const btn = document.getElementById('mainBtn');
+        
+        if (!tracking) {
+            if (!navigator.geolocation) {
+                alert('GPS não suportado neste aparelho.');
+                return;
+            }
+
+            tracking = true;
+            btn.innerText = 'Parar Rastreamento';
+            btn.className = 'btn btn-stop';
+            document.getElementById('status-text').innerText = 'ATIVO';
+            addLog('Iniciando sensores...');
+
+            watchId = navigator.geolocation.watchPosition(
+                async (pos) => {
+                    const { latitude, longitude, accuracy } = pos.coords;
+                    let batteryLevel = 0;
+
+                    try {
+                        const battery = await navigator.getBattery();
+                        batteryLevel = Math.round(battery.level * 100);
+                    } catch(e) {}
+
+                    document.getElementById('stat-lat').innerText = latitude.toFixed(5);
+                    document.getElementById('stat-lng').innerText = longitude.toFixed(5);
+                    document.getElementById('stat-acc').innerText = Math.round(accuracy) + 'm';
+                    document.getElementById('stat-bat').innerText = (batteryLevel || '--') + '%';
+                    document.getElementById('gps-status').innerText = 'Sinal OK';
+
+                    sendToSupabase({
+                        latitude,
+                        longitude,
+                        bateria: batteryLevel,
+                        precisao: accuracy
+                    });
+                },
+                (err) => {
+                    addLog('Erro GPS: ' + err.message);
+                    document.getElementById('gps-status').innerText = 'Erro Sinal';
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            tracking = false;
+            navigator.geolocation.clearWatch(watchId);
+            btn.innerText = 'Iniciar Rastreamento';
+            btn.className = 'btn btn-start';
+            document.getElementById('status-text').innerText = 'PARADO';
+            addLog('Rastreamento encerrado.');
+        }
+    }
+</script>
 </body>
 </html>
